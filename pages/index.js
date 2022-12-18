@@ -1,10 +1,9 @@
 import { gql, GraphQLClient } from 'graphql-request';
 import InfoSection from 'components/InfoSection/InfoSection';
-// import { useRouter } from 'next/router';
-
+import { useRouter } from 'next/router';
 const query = gql`
-  query {
-    allInfos {
+  query ($locale: SiteLocale) {
+    allInfos(locale: $locale) {
       data {
         title
         id
@@ -24,7 +23,8 @@ const query = gql`
   }
 `;
 
-export const getStaticProps = async () => {
+export const getStaticProps = async ({ locale }) => {
+  const variables = { locale: locale };
   const graphQLClient = new GraphQLClient(process.env.DATOCMS_API_URL, {
     headers: {
       'content-type': 'application/json',
@@ -32,7 +32,7 @@ export const getStaticProps = async () => {
     },
   });
 
-  const data = await graphQLClient.request(query);
+  const data = await graphQLClient.request(query, variables);
 
   return {
     props: {
@@ -41,6 +41,8 @@ export const getStaticProps = async () => {
   };
 };
 const Home = ({ cardInfo }) => {
+  const { locale } = useRouter();
+  console.log(locale);
   // const { locale } = useRouter();
   // const bannerData = allBannerHeaders
   //   .flatMap(el => el._allBannerDescriptionLocales)
