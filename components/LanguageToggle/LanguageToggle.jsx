@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { Fragment, useState } from 'react';
+import { Fragment } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { ChevronUpDownIcon } from '@heroicons/react/20/solid';
 
@@ -10,7 +10,7 @@ const locales = [
 
 export const LanguageToggle = ({ handleLocaleChange, value }) => {
   const { locale } = useRouter();
-  const [selected] = useState(value ?? locale);
+  const selected = value ?? locale;
 
   return (
     <Listbox value={selected} onChange={handleLocaleChange}>

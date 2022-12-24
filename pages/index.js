@@ -1,81 +1,49 @@
-import { gql, GraphQLClient } from 'graphql-request';
-import InfoSection from 'components/InfoSection/InfoSection';
-import { useRouter } from 'next/router';
-const query = gql`
-  query ($locale: SiteLocale) {
-    allInfos(locale: $locale) {
-      data {
-        title
-        id
-        cardInfo {
-          title
-          description
-          buttonName
-          id
-          slug
-          bgImage {
-            alt
-            url
-          }
-        }
-      }
-    }
-  }
-`;
+import Categories from 'components/Categories/Categories';
+import Centers from 'components/Centers/Centers';
+import Help from 'components/Help/Help';
+import { Hero } from 'views';
+import { Form } from '@/components';
+import { datoCmsRequest } from '@/lib/datoCmsRequests';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export const getStaticProps = async ({ locale }) => {
   const variables = { locale: locale };
-  const graphQLClient = new GraphQLClient(process.env.DATOCMS_API_URL, {
-    headers: {
-      'content-type': 'application/json',
-      authorization: 'Bearer ' + process.env.DATOCMS_API_KEY,
-    },
-  });
 
-  const data = await graphQLClient.request(query, variables);
+  const data = await datoCmsRequest({ variables });
+
+  if (!data) {
+    return {
+      notFound: true,
+    };
+  }
 
   return {
     props: {
-      cardInfo: data.allInfos,
+      ...(await serverSideTranslations(locale, ['common'])),
+      articles: data.allCategories,
+      centers: data.center,
+      banner: data.banner.content,
+      help: data.help,
+      footer: data.footer,
     },
   };
 };
-const Home = ({ cardInfo }) => {
-  const { locale } = useRouter();
-  console.log(locale);
-  // const { locale } = useRouter();
-  // const bannerData = allBannerHeaders
-  //   .flatMap(el => el._allBannerDescriptionLocales)
-  //   .filter(el => el.locale === locale)
-  //   .flatMap(el => el.value);
-  // console.log(volunteer);
 
-  // bannerData.map(el => {
-
-  // });
-
+const Home = ({ articles, centers, help }) => {
   return (
-    <section className="py-20">
-      <div className="container">
-        <h1 className="mb-10 text-center text-3xl font-bold underline">
-          Banner text
-        </h1>
+    <>
+      <Hero />
 
-        {/* <div>
-          {data.map(el => {
-            return (
-              <h2
-                key={el.id}
-                className="bg-stone-900 p-2 text-center text-gray-200 "
-              >
-                {el.bannerText}
-              </h2>
-            );
-          })}
-        </div> */}
-        <InfoSection info={cardInfo} />
-      </div>
-    </section>
+      <Help title="Ma tahan aidata" button="Vali" EST />
+
+      <Categories articles={articles} />
+
+      <Help help={help} />
+
+      <Centers centers={centers} />
+
+      <Form />
+    </>
   );
 };
 
